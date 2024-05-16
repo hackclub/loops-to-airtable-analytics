@@ -2,6 +2,7 @@ import dotenv from 'dotenv'
 import Airtable from 'airtable'
 
 import loadCsv from './loadCsv'
+import { formatDate } from './util'
 
 dotenv.config()
 
@@ -62,18 +63,78 @@ airtableFieldMappingRules.forEach(rawRule => {
 
 console.log(`Processing Loops export:`)
 
-let test = loopsData.slice(0, 250)
-
 let updateQueue = []
 let createQueue = []
 
-for (let row of test) {
+for (let row of loopsData.reverse()) {
   console.log(`  ${row.email}`)
 
   if (row.userGroup != 'Hack Clubber') {
     console.log("    Skipping because not Hack Clubber")
     continue
   }
+
+  let airtableUpdates = {}
+  let lastEngagementAt
+  let lastEngagement
+  let firstEngagement
+  let totalEngagements = 0
+  let engagementsOverviewData = {}
+
+  let engagements = []
+
+  for (let loopsField in fieldMappingRules) {
+    let airtableField = fieldMappingRules[loopsField]
+
+    if (row[loopsField]) {
+      airtableUpdates[airtableField] = row[loopsField]
+    }
+  }
+
+  airtableUpdates['Programs'] = []
+
+  for (let loopsField in programMappingRules) {
+    let airtableProgramId = programMappingRules[loopsField]
+
+    if (row[loopsField] && row[loopsField] != "") {
+      // if it's a date, then add it our engagements list (excludes Slack ID, for example)
+      if (row[loopsField] instanceof Date) {
+        engagements.push({
+          name: loopsField,
+          time: row[loopsField]
+        })
+      }
+
+      // add to Programs if it's not already there
+      if (!airtableUpdates['Programs'].includes(airtableProgramId)) {
+        airtableUpdates['Programs'].push(airtableProgramId)
+      }
+    }
+  }
+
+  // sort engagements before adding them to airtableUpdates, from most recent to
+  // earliest
+  engagements = engagements.sort((a, b) => b.time - a.time)
+
+  if (engagements.length > 0) {
+    let last = engagements[0]
+    let first = engagements[engagements.length - 1]
+
+    airtableUpdates['Last Engagement At'] = last.time
+    airtableUpdates['Last Engagement'] = last.name
+
+    airtableUpdates['First Engagement'] = first.name
+
+    airtableUpdates['Total Engagements'] = engagements.length
+
+    airtableUpdates['Engagements Overview'] = engagements.map(e =>
+      `${e.name} ${formatDate(e.time)}`
+    ).join('\n')
+  }
+
+  // don't add the hack clubber to the airtable if they have 0 engagements to
+  // save on records (50,000 limit per base)
+  if (engagements.length == 0) continue
 
   let airtableMatch = await new Promise((resolve, reject) => {
     base('Hack Clubbers').select({
@@ -92,26 +153,6 @@ for (let row of test) {
       }
     })
   })
-
-  let airtableUpdates = {}
-
-  for (let loopsField in fieldMappingRules) {
-    let airtableField = fieldMappingRules[loopsField]
-
-    if (row[loopsField]) {
-      airtableUpdates[airtableField] = row[loopsField]
-    }
-  }
-
-  airtableUpdates['Programs'] = []
-
-  for (let loopsField in programMappingRules) {
-    let airtableProgramId = programMappingRules[loopsField]
-
-    if (row[loopsField] && row[loopsField] != "") {
-      airtableUpdates['Programs'].push(airtableProgramId)
-    }
-  }
 
   // convert dates back to strings before sending to airtable
   for (let key in airtableUpdates) {

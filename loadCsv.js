@@ -24,7 +24,12 @@ export default async function loadCSV(filePath) {
           if (parts[1].length != 2) continue
           if (parts[2].length != 2) continue
 
-          row[key] = new Date(row[key])
+          let date = new Date(row[key])
+
+          // check if date is invalid before setting it
+          if (isNaN(date.getTime())) continue
+
+          row[key] = date
         }
 
         return row
