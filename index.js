@@ -66,7 +66,7 @@ console.log(`Processing Loops export:`)
 let updateQueue = []
 let createQueue = []
 
-for (let row of loopsData.reverse()) {
+for (let row of loopsData) {
   console.log(`  ${row.email}`)
 
   if (row.userGroup != 'Hack Clubber') {
