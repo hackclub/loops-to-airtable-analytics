@@ -17,33 +17,49 @@ if (!airtableApiKey) {
 
 let base = new Airtable({ apiKey: airtableApiKey }).base(airtableBaseId)
 
-let loopsCsvExport = await loadCsv(loopsCsvExportPath)
+let loopsData = await loadCsv(loopsCsvExportPath)
 
-let airtableMappingRules = await new Promise((resolve, reject) => {
+let airtableProgramMappingRules = await new Promise((resolve, reject) => {
   let rules = []
 
-  base('Mapping Rules').select().eachPage(
+  base('Program Mapping Rules').select().eachPage(
     (records, nextPage) => {
       records.forEach(record => rules.push(record.fields))
 
       nextPage()
     },
     err => {
-      if (err) {
-        return reject(err)
-      }
-
+      if (err) return reject(err)
       resolve(rules)
     }
   )
 })
 
-let mappingRules = airtableMappingRules.map(rawRule => {
+let airtableFieldMappingRules = await new Promise((resolve, reject) => {
+  let rules = []
+
+  base('Field Mapping Rules').select().eachPage(
+    (records, nextPage) => {
+      records.forEach(record => rules.push(record.fields))
+      nextPage()
+    },
+    err => {
+      if (err) return reject(err)
+      resolve(rules)
+    }
+  )
+})
+
+let programMappingRules = airtableProgramMappingRules.map(rawRule => {
   let rule = {}
-
   rule[rawRule['Loops.so Field To Map']] = rawRule['Program'][0]
-
   return rule
 })
 
-console.log(mappingRules)
+let fieldMappingRules = airtableFieldMappingRules.map(rawRule => {
+  let rule = {}
+  rule[rawRule['Loops.so Field To Map']] = rawRule['Hack Clubber Field']
+  return rule
+})
+
+console.log(fieldMappingRules)
