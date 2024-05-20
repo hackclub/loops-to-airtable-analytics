@@ -2,7 +2,7 @@ import dotenv from 'dotenv'
 import Airtable from 'airtable'
 
 import loadCsv from './loadCsv'
-import { formatDate } from './util'
+import { formatDate, isWithinPastNDays } from './util'
 
 dotenv.config()
 
@@ -10,6 +10,9 @@ const airtableApiKey = process.env.AIRTABLE_API_KEY
 const airtableBaseId = process.env.AIRTABLE_BASE_ID
 
 const loopsCsvExportPath = 'dev_files/loops_export.csv'
+
+// process only the people who have lastEngagementAt in the past 365 days
+const onlyLastYear = true
 
 if (!airtableApiKey) {
   console.error('AIRTABLE_API_KEY must be set')
@@ -60,6 +63,25 @@ let fieldMappingRules = {}
 airtableFieldMappingRules.forEach(rawRule => {
   fieldMappingRules[rawRule['Loops.so Field To Map']] = rawRule['Hack Clubber Field']
 })
+
+console.log('Checking field mappings:')
+
+// only count timestamps that end with At (ex. attendedAt)
+let mappedFieldNames = [...Object.keys(programMappingRules), ...Object.keys(fieldMappingRules)]
+
+let unmappedTimestampFields = Object.keys(loopsData[0])
+  .filter(x => x.endsWith('At'))
+  .filter(x => !mappedFieldNames.includes(x))
+
+unmappedTimestampFields.forEach(unmapped => {
+  console.log(`  ${unmapped} is not mapped!`)
+})
+
+if (unmappedTimestampFields.length == 0) {
+  console.log(` No unmapped fields!`)
+}
+
+console.log()
 
 console.log(`Processing Loops export:`)
 
@@ -135,6 +157,9 @@ for (let row of loopsData) {
   // don't add the hack clubber to the airtable if they have 0 engagements to
   // save on records (50,000 limit per base)
   if (engagements.length == 0) continue
+
+  // skip records in past year if onlyLastYear is set
+  if (onlyLastYear && isWithinPastNDays(lastEngagementAt, 365)) continue
 
   let airtableMatch = await new Promise((resolve, reject) => {
     base('Hack Clubbers').select({

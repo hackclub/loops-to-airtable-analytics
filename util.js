@@ -10,3 +10,10 @@ export function formatDate(date) {
 
   return `${year}-${month}-${day}`;
 }
+
+export function isWithinPastNDays(date, n) {
+  const nDaysAgo = new Date();
+  nDaysAgo.setDate(nDaysAgo.getDate() - n);  // Subtract n days from the current date
+
+  return date >= nDaysAgo;
+}
