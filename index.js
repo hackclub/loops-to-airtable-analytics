@@ -96,6 +96,11 @@ for (let row of loopsData) {
     continue
   }
 
+  if (!row.subscribed) {
+    console.log("    Skipping because not subscribed")
+    continue
+  }
+
   let airtableUpdates = {}
   let lastEngagementAt
   let lastEngagement

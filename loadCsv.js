@@ -21,9 +21,18 @@ export default async function loadCSV(filePath) {
         // check each string field to see if it starts with XXXX-XX-XX, meaning
         // it's a date. if it's a date, then parse and convert into date.
         //
-        // also convert numbers to numbers
+        // also convert numbers to numbers, and bools to bools
         for (let key in row) {
           if (typeof row[key] !== 'string') {
+            continue
+          }
+
+          // check if bool, if so convert to bool and stop
+          if (row[key].toLowerCase() == 'true') {
+            row[key] = true
+            continue
+          } else if (row[key].toLowerCase() == 'false') {
+            row[key] = false
             continue
           }
 
