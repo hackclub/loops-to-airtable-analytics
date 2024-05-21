@@ -5,4 +5,7 @@ To use create `.env` ands set:
 ```
 AIRTABLE_API_KEY=
 AIRTABLE_BASE_ID=
+
+# this must be gotten by inspecting requests the browser makes to Loops.so from the browser
+LOOPS_SESSION_COOKIE=
 ```
