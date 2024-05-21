@@ -106,10 +106,6 @@ for (let row of loopsData) {
 
   let airtableUpdates = {}
   let lastEngagementAt
-  let lastEngagement
-  let firstEngagement
-  let totalEngagements = 0
-  let engagementsOverviewData = {}
 
   let engagements = []
 
