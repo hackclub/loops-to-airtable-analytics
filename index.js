@@ -14,7 +14,7 @@ const loopsSessionCookie = process.env.LOOPS_SESSION_COOKIE
 
 const loopsCsvExportPath = 'tmp/loops_export.csv'
 
-await downloadAudienceExport(loopsSessionCookie, loopsCsvExportPath)
+// await downloadAudienceExport(loopsSessionCookie, loopsCsvExportPath)
 
 // process only the people who have lastEngagementAt in the past 365 days
 const onlyLastYear = true
@@ -150,6 +150,8 @@ for (let row of loopsData) {
   if (engagements.length > 0) {
     let last = engagements[0]
     let first = engagements[engagements.length - 1]
+
+    airtableUpdates['First Program'] = [programMappingRules[first.name]]
 
     airtableUpdates['Last Engagement At'] = last.time
     airtableUpdates['Last Engagement'] = last.name
