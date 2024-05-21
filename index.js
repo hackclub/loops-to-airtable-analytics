@@ -151,9 +151,11 @@ for (let row of loopsData) {
     let last = engagements[0]
     let first = engagements[engagements.length - 1]
 
+    lastEngagementAt = last.time
+
     airtableUpdates['First Program'] = [programMappingRules[first.name]]
 
-    airtableUpdates['Last Engagement At'] = last.time
+    airtableUpdates['Last Engagement At'] = lastEngagementAt
     airtableUpdates['Last Engagement'] = last.name
 
     airtableUpdates['First Engagement'] = first.name
@@ -170,7 +172,7 @@ for (let row of loopsData) {
   if (engagements.length == 0) continue
 
   // skip records in past year if onlyLastYear is set
-  if (onlyLastYear && isWithinPastNDays(lastEngagementAt, 365)) continue
+  if (onlyLastYear && !isWithinPastNDays(lastEngagementAt, 365)) continue
 
   let airtableMatch = await new Promise((resolve, reject) => {
     base('Hack Clubbers').select({
