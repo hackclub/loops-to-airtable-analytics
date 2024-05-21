@@ -17,3 +17,14 @@ export function isWithinPastNDays(date, n) {
 
   return date >= nDaysAgo;
 }
+
+// zach@hackclub.com => zac*@hac*****.com
+export function anonymizeEmail(email) {
+  let [localPart, domain] = email.split('@');
+  let [baseDomain, tld] = domain.split('.');
+
+  localPart = localPart.length > 3 ? localPart.slice(0, 3) + '*'.repeat(localPart.length - 3) : localPart;
+  domain = baseDomain.length > 3 ? baseDomain.slice(0, 3) + '*'.repeat(baseDomain.length - 3) : baseDomain;
+
+  return `${localPart}@${domain}.${tld}`;
+}

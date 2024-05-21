@@ -2,7 +2,7 @@ import dotenv from 'dotenv'
 import Airtable from 'airtable'
 
 import loadCsv from './loadCsv'
-import { formatDate, isWithinPastNDays } from './util'
+import { formatDate, isWithinPastNDays, anonymizeEmail } from './util'
 
 dotenv.config()
 
@@ -13,6 +13,8 @@ const loopsCsvExportPath = 'dev_files/loops_export.csv'
 
 // process only the people who have lastEngagementAt in the past 365 days
 const onlyLastYear = true
+
+const truncateEmailsInLogs = true
 
 if (!airtableApiKey) {
   console.error('AIRTABLE_API_KEY must be set')
@@ -89,7 +91,8 @@ let updateQueue = []
 let createQueue = []
 
 for (let row of loopsData) {
-  console.log(`  ${row.email}`)
+  let emailToLog = truncateEmailsInLogs ? anonymizeEmail(row.email) : row.email
+  console.log(`  ${emailToLog}`)
 
   if (row.userGroup != 'Hack Clubber') {
     console.log("    Skipping because not Hack Clubber")
