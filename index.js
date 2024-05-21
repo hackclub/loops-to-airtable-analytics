@@ -14,7 +14,7 @@ const loopsSessionCookie = process.env.LOOPS_SESSION_COOKIE
 
 const loopsCsvExportPath = 'tmp/loops_export.csv'
 
-// await downloadAudienceExport(loopsSessionCookie, loopsCsvExportPath)
+await downloadAudienceExport(loopsSessionCookie, loopsCsvExportPath)
 
 // process only the people who have lastEngagementAt in the past 365 days
 const onlyLastYear = true
