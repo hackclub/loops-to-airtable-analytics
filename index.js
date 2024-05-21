@@ -1,6 +1,7 @@
 import dotenv from 'dotenv'
 import Airtable from 'airtable'
 
+import { downloadAudienceExport } from './loops'
 import loadCsv from './loadCsv'
 import { formatDate, isWithinPastNDays, anonymizeEmail } from './util'
 
@@ -9,7 +10,11 @@ dotenv.config()
 const airtableApiKey = process.env.AIRTABLE_API_KEY
 const airtableBaseId = process.env.AIRTABLE_BASE_ID
 
-const loopsCsvExportPath = 'dev_files/loops_export.csv'
+const loopsSessionCookie = process.env.LOOPS_SESSION_COOKIE
+
+const loopsCsvExportPath = 'tmp/loops_export.csv'
+
+await downloadAudienceExport(loopsSessionCookie, loopsCsvExportPath)
 
 // process only the people who have lastEngagementAt in the past 365 days
 const onlyLastYear = true

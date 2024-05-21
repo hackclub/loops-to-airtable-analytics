@@ -1,4 +1,8 @@
-// thank you to chatgpt for writing this
+const https = require('https');
+const fs = require('fs');
+
+// thank you to chatgpt for writing functions in this file
+
 export function formatDate(date) {
   let year = date.getFullYear();
   let month = date.getMonth() + 1;  // Months are zero-indexed in JavaScript
@@ -27,4 +31,26 @@ export function anonymizeEmail(email) {
   domain = baseDomain.length > 3 ? baseDomain.slice(0, 3) + '*'.repeat(baseDomain.length - 3) : baseDomain;
 
   return `${localPart}@${domain}.${tld}`;
+}
+
+// wait the specified number of seconds
+export async function wait(seconds) {
+  return new Promise(resolve => setTimeout(resolve, seconds * 1000));
+}
+
+export async function downloadFile(url, destPath) {
+  const file = fs.createWriteStream(destPath);
+
+  return new Promise((resolve, reject) => {
+    https.get(url, response => {
+      response.pipe(file);
+
+      file.on('finish', () => {
+        file.close(resolve);
+      });
+    }).on('error', error => {
+      fs.unlink(destPath);
+      reject(error);
+    });
+  });
 }
