@@ -169,10 +169,16 @@ for (let row of loopsData) {
 
   // don't add the hack clubber to the airtable if they have 0 engagements to
   // save on records (50,000 limit per base)
-  if (engagements.length == 0) continue
+  if (engagements.length == 0) {
+    console.log("    Skipping because 0 engagements")
+    continue
+  }
 
   // skip records in past year if onlyLastYear is set
-  if (onlyLastYear && !isWithinPastNDays(lastEngagementAt, 365)) continue
+  if (onlyLastYear && !isWithinPastNDays(lastEngagementAt, 365)) {
+    console.log("    Skipping because no engagements in past year")
+    continue
+  }
 
   let airtableMatch = await new Promise((resolve, reject) => {
     base('Hack Clubbers').select({
