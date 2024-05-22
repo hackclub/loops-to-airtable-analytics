@@ -158,6 +158,7 @@ for (let row of loopsData) {
     airtableUpdates['Last Engagement At'] = lastEngagementAt
     airtableUpdates['Last Engagement'] = last.name
 
+    airtableUpdates['First Engagement At'] = first.time
     airtableUpdates['First Engagement'] = first.name
 
     airtableUpdates['Total Engagements'] = engagements.length
