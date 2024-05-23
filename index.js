@@ -30,6 +30,22 @@ let base = new Airtable({ apiKey: airtableApiKey }).base(airtableBaseId)
 
 let loopsData = await loadCsv(loopsCsvExportPath)
 
+let airtableProgramNames = await new Promise((resolve, reject) => {
+  let programs = {}
+
+  base('Programs').select().eachPage(
+    (records, nextPage) => {
+      records.forEach(record => programs[record.id] = record.fields['Name'])
+
+      nextPage()
+    },
+    err => {
+      if (err) return reject(err)
+      resolve(programs)
+    }
+  )
+})
+
 let airtableProgramMappingRules = await new Promise((resolve, reject) => {
   let rules = []
 
@@ -132,7 +148,8 @@ for (let row of loopsData) {
       if (row[loopsField] instanceof Date) {
         engagements.push({
           name: loopsField,
-          time: row[loopsField]
+          time: row[loopsField],
+          programName: airtableProgramNames[programMappingRules[loopsField]]
         })
       }
 
@@ -147,6 +164,9 @@ for (let row of loopsData) {
   // earliest
   engagements = engagements.sort((a, b) => b.time - a.time)
 
+  // for ysws specific stats calculation
+  let yswsEngagements = engagements.filter(e => e.programName == "YSWS")
+
   if (engagements.length > 0) {
     let last = engagements[0]
     let first = engagements[engagements.length - 1]
@@ -160,6 +180,12 @@ for (let row of loopsData) {
 
     airtableUpdates['First Engagement At'] = first.time
     airtableUpdates['First Engagement'] = first.name
+
+    if (yswsEngagements.length > 0) {
+      airtableUpdates['Last YSWS Engagement At'] = yswsEngagements[0].time
+      airtableUpdates['Last YSWS Engagement'] = yswsEngagements[0].name
+      airtableUpdates['YSWS Engagement Count'] = yswsEngagements.length
+    }
 
     airtableUpdates['Total Engagements'] = engagements.length
 
