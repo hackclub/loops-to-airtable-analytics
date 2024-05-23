@@ -14,7 +14,7 @@ const loopsSessionCookie = process.env.LOOPS_SESSION_COOKIE
 
 const loopsCsvExportPath = 'tmp/loops_export.csv'
 
-await downloadAudienceExport(loopsSessionCookie, loopsCsvExportPath)
+// await downloadAudienceExport(loopsSessionCookie, loopsCsvExportPath)
 
 // process only the people who have lastEngagementAt in the past 365 days
 const onlyLastYear = true
@@ -247,7 +247,7 @@ for (let row of loopsData) {
 
   if (updateQueue.length == 10) {
     await new Promise((resolve, reject) => {
-      base('Hack Clubbers').update(updateQueue, (err, _) => {
+      base('Hack Clubbers').replace(updateQueue, (err, _) => {
         if (err) reject(err)
         resolve()
       })
@@ -270,7 +270,7 @@ for (let row of loopsData) {
 
 if (updateQueue.length > 0) {
   await new Promise((resolve, reject) => {
-    base('Hack Clubbers').update(updateQueue, (err, _) => {
+    base('Hack Clubbers').replace(updateQueue, (err, _) => {
       if (err) reject(err)
       resolve()
     })
