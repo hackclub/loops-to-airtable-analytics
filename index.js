@@ -164,8 +164,6 @@ for (let row of loopsData) {
   // earliest
   engagements = engagements.sort((a, b) => b.time - a.time)
 
-  // for ysws specific stats calculation
-  let yswsEngagements = engagements.filter(e => e.programName == "YSWS")
 
   // this will check the ysws engagement name for this keyword, and consider
   // this a ysws 'approval' if this word is present in the engagement name
@@ -173,6 +171,8 @@ for (let row of loopsData) {
   // this is to differentiate between 'bobaDropsSubmittedAt' and
   // 'bobaDropsApprovedAt'
   let yswsApprovedKeyword = 'approved'
+
+  let yswsApprovals = engagements.filter(e => e.programName == "YSWS" && e.name.toLowerCase().includes(yswsApprovedKeyword))
 
   if (engagements.length > 0) {
     let last = engagements[0]
@@ -188,10 +188,10 @@ for (let row of loopsData) {
     airtableUpdates['First Engagement At'] = first.time
     airtableUpdates['First Engagement'] = first.name
 
-    if (yswsEngagements.length > 0) {
-      airtableUpdates['Last YSWS Engagement At'] = yswsEngagements[0].time
-      airtableUpdates['Last YSWS Engagement'] = yswsEngagements[0].name
-      airtableUpdates['YSWS Approved Count'] = yswsEngagements.filter(e => e.name.toLowerCase().includes(yswsApprovedKeyword)).length
+    if (yswsApprovals.length > 0) {
+      airtableUpdates['Last YSWS Approved At'] = yswsApprovals[0].time
+      airtableUpdates['Last YSWS Approved'] = yswsApprovals[0].name
+      airtableUpdates['YSWS Approved Count'] = yswsApprovals.length
     }
 
     airtableUpdates['Total Engagements'] = engagements.length
