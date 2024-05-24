@@ -190,7 +190,7 @@ for (let row of loopsData) {
 
     if (engagements.length > 1) {
       // find 2nd program they engaged in. ex. they start with Slack, then do YSWS
-      let secondProgramFirstEngagement = engagements.find(e => e.programName !== first.programName)
+      let secondProgramFirstEngagement = engagements.reverse().find(e => e.programName !== first.programName)
 
       // this will be undefined if the hack clubber has multiple engagments, but
       // all within the same program. ex. they signed up for slack, then posted
