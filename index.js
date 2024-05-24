@@ -188,6 +188,18 @@ for (let row of loopsData) {
     airtableUpdates['First Engagement At'] = first.time
     airtableUpdates['First Engagement'] = first.name
 
+    if (engagements.length > 1) {
+      // find 2nd program they engaged in. ex. they start with Slack, then do YSWS
+      let secondProgramFirstEngagement = engagements.find(e => e.programName !== first.programName)
+
+      // this will be undefined if the hack clubber has multiple engagments, but
+      // all within the same program. ex. they signed up for slack, then posted
+      // in #ship
+      if (secondProgramFirstEngagement) {
+        airtableUpdates['Second Program'] = [programMappingRules[secondProgramFirstEngagement.name]]
+      }
+    }
+
     if (yswsApprovals.length > 0) {
       airtableUpdates['Last YSWS Approved At'] = yswsApprovals[0].time
       airtableUpdates['Last YSWS Approved'] = yswsApprovals[0].name
