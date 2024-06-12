@@ -1,9 +1,10 @@
 import dotenv from 'dotenv'
 import Airtable from 'airtable'
+import { LoopsClient } from 'loops'
 
 import { downloadAudienceExport } from './loops'
 import loadCsv from './loadCsv'
-import { formatDate, isWithinPastNDays, anonymizeEmail } from './util'
+import { formatDate, isWithinPastNDays, anonymizeEmail, sha256, categorizeGenderOfName } from './util'
 
 dotenv.config()
 
@@ -13,6 +14,8 @@ const airtableBaseId = process.env.AIRTABLE_BASE_ID
 const loopsSessionCookie = process.env.LOOPS_SESSION_COOKIE
 
 const loopsCsvExportPath = 'tmp/loops_export.csv'
+
+const loops = new LoopsClient(process.env.LOOPS_API_KEY)
 
 await downloadAudienceExport(loopsSessionCookie, loopsCsvExportPath)
 
@@ -114,6 +117,32 @@ let createQueue = []
 for (let row of loopsData) {
   let emailToLog = truncateEmailsInLogs ? anonymizeEmail(row.email) : row.email
   console.log(`  ${emailToLog}`)
+
+  if (row.email.endsWith('@hack.af')) {
+    console.log("    Skipping because hack.af is a test email")
+    continue
+  }
+
+  // calculate gender based on their first name
+  if (row.firstName && sha256(row.firstName) != row.calculatedFirstNameGenderHash) {
+    let fields = {
+      calculatedFirstNameGender: await categorizeGenderOfName(row.firstName),
+      calculatedFirstNameGenderHash: sha256(row.firstName)
+    }
+
+    let resp = await loops.updateContact(row.email, fields)
+    if (resp.error) {
+      console.error(resp.error)
+      continue
+    }
+
+    row = {
+      ...row,
+      ...fields
+    }
+
+    console.log(`    Categorized gender of first name: ${row.firstName} -> ${fields.calculatedFirstNameGender}`)
+  }
 
   if (row.userGroup != 'Hack Clubber') {
     console.log("    Skipping because not Hack Clubber")

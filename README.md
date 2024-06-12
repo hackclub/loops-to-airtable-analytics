@@ -8,4 +8,8 @@ AIRTABLE_BASE_ID=
 
 # this must be gotten by inspecting requests the browser makes to Loops.so from the browser
 LOOPS_SESSION_COOKIE=
+
+LOOPS_API_KEY=
+
+OPENAI_API_KEY=
 ```

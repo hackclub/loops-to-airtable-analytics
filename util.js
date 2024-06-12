@@ -1,5 +1,10 @@
-const https = require('https');
-const fs = require('fs');
+import { generateObject } from 'ai'
+import { openai } from '@ai-sdk/openai'
+import { z } from 'zod'
+
+const https = require('https')
+const fs = require('fs')
+const crypto = require('crypto')
 
 // thank you to chatgpt for writing functions in this file
 
@@ -53,4 +58,27 @@ export async function downloadFile(url, destPath) {
       reject(error);
     });
   });
+}
+
+export async function categorizeGenderOfName(name) {
+  const options = [
+    'male',
+    'female',
+    'gender-neutral',
+    'error'
+  ]
+
+  const { object } = await generateObject({
+    model: openai('gpt-3.5-turbo'),
+    schema: z.object({
+      gender: z.string()
+    }),
+    prompt: `Classify the gender of a given name. Name: '${name}'. Must be one of ${JSON.stringify(options)}`,
+  })
+
+  return object.gender
+}
+
+export function sha256(string) {
+  return crypto.createHash('sha256').update(string).digest('hex');
 }
