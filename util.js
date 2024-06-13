@@ -76,6 +76,9 @@ export async function categorizeGenderOfName(name) {
     prompt: `Classify the gender of a given name. Name: '${name}'. Must be one of ${JSON.stringify(options)}`,
   })
 
+  if (!options.includes(object.gender))
+    return categorizeGenderOfName(name)
+
   return object.gender
 }
 
