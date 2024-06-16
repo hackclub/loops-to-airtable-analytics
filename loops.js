@@ -8,7 +8,12 @@ export async function downloadAudienceExport(sessionCookie, destPath) {
       "content-type": "application/json",
       "cookie": sessionCookie,
     },
-    "body": "{\"json\":{\"filter\":null}}",
+    "body": JSON.stringify({
+      json: {
+        filter: null,
+        mailingListId: ""
+      }
+    }),
     "method": "POST"
   })
 
