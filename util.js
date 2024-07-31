@@ -69,7 +69,7 @@ export async function categorizeGenderOfName(name) {
   ]
 
   const { object } = await generateObject({
-    model: openai('gpt-3.5-turbo'),
+    model: openai('gpt-4o-mini'),
     schema: z.object({
       gender: z.string()
     }),
