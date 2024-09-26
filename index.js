@@ -4,7 +4,7 @@ import { LoopsClient } from 'loops'
 
 import { downloadAudienceExport } from './loops'
 import loadCsv from './loadCsv'
-import { formatDate, isWithinPastNDays, anonymizeEmail, sha256, categorizeGenderOfName } from './util'
+import { formatDate, isWithinPastNDays, anonymizeEmail, sha256, categorizeGenderOfName, geocodeAddress } from './util'
 
 dotenv.config()
 
@@ -142,6 +142,43 @@ for (let row of loopsData) {
     }
 
     console.log(`    Categorized gender of first name: ${row.firstName} -> ${fields.calculatedFirstNameGender}`)
+  }
+
+  // geocode address if addressLine1 and addressCity are present
+  if (row.addressLine1 && row.addressCity) {
+    const addressString = `${row.addressLine1}
+${row.addressLine2 || ''}
+${row.addressCity}, ${row.addressState || ''} ${row.addressZipCode || ''}
+${row.addressCountry || ''}`.trim()
+
+    const addressHash = sha256(addressString)
+
+    if (addressHash !== row.calculatedGeocodedHash) {
+      const geocodeResult = await geocodeAddress(addressString)
+
+      if (geocodeResult) {
+        let fields = {
+          calculatedGeocodedLongitude: geocodeResult.longitude,
+          calculatedGeocodedLatitude: geocodeResult.latitude,
+          calculatedGeocodedCountryName: geocodeResult.countryName,
+          calculatedGeocodedCountryCode: geocodeResult.countryCode,
+          calculatedGeocodedHash: addressHash
+        }
+
+        let resp = await loops.updateContact(row.email, fields)
+        if (!resp.success) {
+          console.error(resp.message)
+          continue
+        }
+
+        row = {
+          ...row,
+          ...fields
+        }
+
+        console.log(`    Geocoded address for ${emailToLog}`)
+      }
+    }
   }
 
   if (row.userGroup != 'Hack Clubber') {

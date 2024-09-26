@@ -1,6 +1,7 @@
 import { generateObject } from 'ai'
 import { openai } from '@ai-sdk/openai'
 import { z } from 'zod'
+import fetch from 'node-fetch';
 
 const https = require('https')
 const fs = require('fs')
@@ -84,4 +85,40 @@ export async function categorizeGenderOfName(name) {
 
 export function sha256(string) {
   return crypto.createHash('sha256').update(string).digest('hex');
+}
+
+export async function geocodeAddress(address) {
+  const apiKey = process.env.GOOGLE_MAPS_API_KEY;
+  const encodedAddress = encodeURIComponent(address);
+  const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodedAddress}&key=${apiKey}`;
+
+  try {
+    const response = await fetch(url);
+    const data = await response.json();
+
+    if (data.status !== 'OK') {
+      throw new Error(`Geocoding error: ${data.status}`);
+    }
+
+    const result = data.results[0];
+    const location = result.geometry.location;
+    const countryComponent = result.address_components.find(component =>
+      component.types.includes('country')
+    );
+
+    return {
+      longitude: location.lng,
+      latitude: location.lat,
+      countryName: countryComponent ? countryComponent.long_name : null,
+      countryCode: countryComponent ? countryComponent.short_name : null,
+      rawJson: {
+        provider: 'Google Maps',
+        geocodedAt: new Date().toISOString(),
+        rawGeocodeResult: result
+      }
+    };
+  } catch (error) {
+    console.error('Error geocoding address:', error);
+    return null;
+  }
 }
