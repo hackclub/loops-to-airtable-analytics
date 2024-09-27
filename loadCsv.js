@@ -8,7 +8,9 @@ import { parse } from 'fast-csv'
 // main app logic
 const numberOverrides = [
   'slackShipCount',
-  'slackScrapbookCount'
+  'slackScrapbookCount',
+  'calculatedGeocodedLongitude',
+  'calculatedGeocodedLatitude'
 ]
 
 export default async function loadCSV(filePath) {
