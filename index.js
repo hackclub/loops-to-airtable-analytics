@@ -187,7 +187,42 @@ ${row.addressCountry || ''}`.trim()
   }
 
   if (!row.subscribed) {
-    console.log("    Skipping because not subscribed")
+    console.log("    User is unsubscribed; checking if Airtable record exists to delete")
+
+    // Check if Airtable record exists
+    let airtableMatch = await new Promise((resolve, reject) => {
+      base('Hack Clubbers').select({
+        filterByFormula: `{${fieldMappingRules.email}} = '${row.email}'`
+      }).firstPage((err, records) => {
+        if (err) return reject(err)
+
+        if (records.length === 0) {
+          resolve(null)
+        } else {
+          const record = records[0]
+          const match = {
+            ...record.fields,
+            createdTime: new Date(record._rawJson.createdTime),
+            id: record.id
+          }
+          resolve(match)
+        }
+      })
+    })
+
+    if (airtableMatch) {
+      // Delete the Airtable record
+      await new Promise((resolve, reject) => {
+        base('Hack Clubbers').destroy(airtableMatch.id, (err, deletedRecord) => {
+          if (err) return reject(err)
+          console.log(`    Deleted Airtable record for ${emailToLog}`)
+          resolve()
+        })
+      })
+    } else {
+      console.log("    No Airtable record to delete")
+    }
+
     continue
   }
 
