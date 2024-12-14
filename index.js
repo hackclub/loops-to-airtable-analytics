@@ -123,28 +123,6 @@ for (let row of loopsData) {
     continue
   }
 
-  // calculate gender based on their full name
-  const fullName = [row.firstName, row.lastName].filter(Boolean).join(' ');
-  if (fullName && sha256(fullName) != row.calculatedFullNameGenderHash) {
-    let fields = {
-      calculatedFirstNameGender: await categorizeGenderOfName(fullName, row.calculatedGeocodedCountryCode),
-      calculatedFullNameGenderHash: sha256(fullName)
-    }
-
-    let resp = await loops.updateContact(row.email, fields)
-    if (resp.error) {
-      console.error(resp.error)
-      continue
-    }
-
-    row = {
-      ...row,
-      ...fields
-    }
-
-    console.log(`    Categorized gender of name: ${fullName} -> ${fields.calculatedFirstNameGender}`)
-  }
-
   // geocode address if addressLine1 and addressCity are present
   if (row.addressLine1 && row.addressCity) {
     const addressString = `${row.addressLine1}
@@ -180,6 +158,28 @@ ${row.addressCountry || ''}`.trim()
         console.log(`    Geocoded address for ${emailToLog}`)
       }
     }
+  }
+
+  // calculate gender based on their full name, using geocoded country code if available
+  const fullName = [row.firstName, row.lastName].filter(Boolean).join(' ');
+  if (fullName && sha256(fullName) != row.calculatedFullNameGenderHash) {
+    let fields = {
+      calculatedFirstNameGender: await categorizeGenderOfName(fullName, row.calculatedGeocodedCountryCode),
+      calculatedFullNameGenderHash: sha256(fullName)
+    }
+
+    let resp = await loops.updateContact(row.email, fields)
+    if (resp.error) {
+      console.error(resp.error)
+      continue
+    }
+
+    row = {
+      ...row,
+      ...fields
+    }
+
+    console.log(`    Categorized gender of name: ${fullName} -> ${fields.calculatedFirstNameGender}`)
   }
 
   if (row.userGroup != 'Hack Clubber') {
