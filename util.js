@@ -69,35 +69,30 @@ export async function categorizeGenderOfName(name, countryCode = null) {
     'error'
   ]
 
-  try {
-    const apiKey = process.env.GENDERIZE_API_KEY;
-    const baseUrl = 'https://api.genderize.io';
-    let url = apiKey ? 
-      `${baseUrl}?name=${encodeURIComponent(name)}&apikey=${apiKey}` :
-      `${baseUrl}?name=${encodeURIComponent(name)}`;
-    
-    if (countryCode) {
-      url += `&country_id=${countryCode}`;
-    }
+  const apiKey = process.env.GENDERIZE_API_KEY;
+  const baseUrl = 'https://api.genderize.io';
+  let url = apiKey ? 
+    `${baseUrl}?name=${encodeURIComponent(name)}&apikey=${apiKey}` :
+    `${baseUrl}?name=${encodeURIComponent(name)}`;
+  
+  if (countryCode) {
+    url += `&country_id=${countryCode}`;
+  }
 
-    const response = await fetch(url);
-    const data = await response.json();
+  const response = await fetch(url);
+  const data = await response.json();
 
-    if (data.gender === null) {
-      return 'error';
-    }
-
-    // Genderize only returns 'male' or 'female', so we'll consider low probability
-    // predictions as gender-neutral
-    if (data.probability < 0.75) {
-      return 'gender-neutral';
-    }
-
-    return data.gender;
-  } catch (error) {
-    console.error('Error calling Genderize API:', error);
+  if (data.gender === null) {
     return 'error';
   }
+
+  // Genderize only returns 'male' or 'female', so we'll consider low probability
+  // predictions as gender-neutral
+  if (data.probability < 0.75) {
+    return 'gender-neutral';
+  }
+
+  return data.gender;
 }
 
 export function sha256(string) {
