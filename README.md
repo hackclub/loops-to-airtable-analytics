@@ -12,6 +12,9 @@ LOOPS_SESSION_COOKIE=
 
 LOOPS_API_KEY=
 
+# for name demographics
+GENDERIZE_API_KEY=
+
 OPENAI_API_KEY=
 ```
 

@@ -123,11 +123,12 @@ for (let row of loopsData) {
     continue
   }
 
-  // calculate gender based on their first name
-  if (row.firstName && sha256(row.firstName) != row.calculatedFirstNameGenderHash) {
+  // calculate gender based on their full name
+  const fullName = [row.firstName, row.lastName].filter(Boolean).join(' ');
+  if (fullName && sha256(fullName) != row.calculatedFullNameGenderHash) {
     let fields = {
-      calculatedFirstNameGender: await categorizeGenderOfName(row.firstName),
-      calculatedFirstNameGenderHash: sha256(row.firstName)
+      calculatedFirstNameGender: await categorizeGenderOfName(fullName, row.calculatedGeocodedCountryCode),
+      calculatedFullNameGenderHash: sha256(fullName)
     }
 
     let resp = await loops.updateContact(row.email, fields)
@@ -141,7 +142,7 @@ for (let row of loopsData) {
       ...fields
     }
 
-    console.log(`    Categorized gender of first name: ${row.firstName} -> ${fields.calculatedFirstNameGender}`)
+    console.log(`    Categorized gender of name: ${fullName} -> ${fields.calculatedFirstNameGender}`)
   }
 
   // geocode address if addressLine1 and addressCity are present

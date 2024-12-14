@@ -61,7 +61,7 @@ export async function downloadFile(url, destPath) {
   });
 }
 
-export async function categorizeGenderOfName(name) {
+export async function categorizeGenderOfName(name, countryCode = null) {
   const options = [
     'male',
     'female',
@@ -69,18 +69,35 @@ export async function categorizeGenderOfName(name) {
     'error'
   ]
 
-  const { object } = await generateObject({
-    model: openai('gpt-4o-mini'),
-    schema: z.object({
-      gender: z.string()
-    }),
-    prompt: `Classify the gender of a given name. Name: '${name}'. Must be one of ${JSON.stringify(options)}`,
-  })
+  try {
+    const apiKey = process.env.GENDERIZE_API_KEY;
+    const baseUrl = 'https://api.genderize.io';
+    let url = apiKey ? 
+      `${baseUrl}?name=${encodeURIComponent(name)}&apikey=${apiKey}` :
+      `${baseUrl}?name=${encodeURIComponent(name)}`;
+    
+    if (countryCode) {
+      url += `&country_id=${countryCode}`;
+    }
 
-  if (!options.includes(object.gender))
-    return categorizeGenderOfName(name)
+    const response = await fetch(url);
+    const data = await response.json();
 
-  return object.gender
+    if (data.gender === null) {
+      return 'error';
+    }
+
+    // Genderize only returns 'male' or 'female', so we'll consider low probability
+    // predictions as gender-neutral
+    if (data.probability < 0.75) {
+      return 'gender-neutral';
+    }
+
+    return data.gender;
+  } catch (error) {
+    console.error('Error calling Genderize API:', error);
+    return 'error';
+  }
 }
 
 export function sha256(string) {
