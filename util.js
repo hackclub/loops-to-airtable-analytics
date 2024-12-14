@@ -62,13 +62,6 @@ export async function downloadFile(url, destPath) {
 }
 
 export async function categorizeGenderOfName(name, countryCode = null) {
-  const options = [
-    'male',
-    'female',
-    'gender-neutral',
-    'error'
-  ]
-
   const apiKey = process.env.GENDERIZE_API_KEY;
   const baseUrl = 'https://api.genderize.io';
   let url = apiKey ? 
@@ -81,6 +74,10 @@ export async function categorizeGenderOfName(name, countryCode = null) {
 
   const response = await fetch(url);
   const data = await response.json();
+
+  if (data.error) {
+    throw new Error("Bad response from genderize.io: " + data.error);
+  }
 
   if (data.gender === null) {
     return 'error';
