@@ -11,7 +11,8 @@ const numberOverrides = [
   'slackScrapbookCount',
   'calculatedGeocodedLongitude',
   'calculatedGeocodedLatitude',
-  'calculatedYswsWeightedGrantContribution'
+  'calculatedYswsWeightedGrantContribution',
+  'calculated2025YswsWeightedGrantContribution'
 ]
 
 export default async function loadCSV(filePath) {
