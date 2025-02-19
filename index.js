@@ -182,6 +182,32 @@ ${row.addressCountry || ''}`.trim()
     console.log(`    Categorized gender of name: ${fullName} -> ${fields.calculatedFirstNameGender}`)
   }
 
+  let calculatedGenderBestKnownHash = sha256(`${row.calculatedFirstNameGender}${row.genderSelfReported}`)
+  if ((row.calculatedFirstNameGender || row.genderSelfReported) && calculatedGenderBestKnownHash !== row.calculatedGenderBestKnownHash) {
+    let gender = await determineBestKnownGender({
+      firstNameGender: row.calculatedFirstNameGender,
+      genderSelfReported: row.genderSelfReported
+    })
+
+    let fields = {
+      calculatedGenderBestKnown: gender,
+      calculatedGenderBestKnownHash: calculatedGenderBestKnownHash
+    }
+
+    let resp = await loops.updateContact(row.email, fields)
+    if (resp.error) {
+      console.error(resp.error)
+      continue
+    }
+
+    row = {
+      ...row,
+      ...fields
+    }
+
+    console.log(`    Determined best known gender: ${fields.calculatedGenderBestKnown}`)
+  }
+
   if (row.userGroup != 'Hack Clubber') {
     console.log("    Skipping because not Hack Clubber")
     continue

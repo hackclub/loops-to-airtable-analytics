@@ -92,6 +92,38 @@ export async function categorizeGenderOfName(name, countryCode = null) {
   return data.gender;
 }
 
+export async function determineBestKnownGender({ firstNameGender, genderSelfReported }) {
+  const options = [ 'male', 'female', 'nonbinary' ]
+  const prompt = `
+Categorize the user's gender into one of the following options: ${options.join(', ')}
+
+User provided information (empty quotes indicate that the user didn't provide that information):
+
+Self-reported gender: "${genderSelfReported}"
+Gender of user's first name: "${firstNameGender}"
+
+Instructions:
+
+1. If the user self-reported their gender, use this. Self-reported gender always takes precedent over gender of first name.
+2. If the user didn't self-report their gender, use the gender of their first name
+`
+
+  const { object } = await generateObject({
+    model: openai('gpt-4o'),
+    schema: z.object({
+      gender: z.enum(['male', 'female', 'nonbinary']),
+      unableToCategorizeGenderWithGivenInformation: z.boolean()
+    }),
+    prompt
+  })
+
+  if (object.unableToCategorizeGenderWithGivenInformation) {
+    return null
+  }
+
+  return object.gender
+}
+
 export function sha256(string) {
   return crypto.createHash('sha256').update(string).digest('hex');
 }
