@@ -4,7 +4,7 @@ import { LoopsClient } from 'loops'
 
 import { downloadAudienceExport } from './loops'
 import loadCsv from './loadCsv'
-import { formatDate, isWithinPastNDays, anonymizeEmail, sha256, categorizeGenderOfName, geocodeAddress } from './util'
+import { formatDate, isWithinPastNDays, anonymizeEmail, sha256, categorizeGenderOfName, geocodeAddress, determineBestKnownGender } from './util'
 
 dotenv.config()
 
