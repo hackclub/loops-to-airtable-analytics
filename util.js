@@ -93,6 +93,12 @@ export async function categorizeGenderOfName(name, countryCode = null) {
 }
 
 export async function determineBestKnownGender({ firstNameGender, genderSelfReported }) {
+  // if the given firstNameGender is "error" or "gender-neutral", our prompt
+  // will incorrectly categorize the gender, so we'll use an empty string
+  if (firstNameGender != 'male' && firstNameGender != 'female') {
+    firstNameGender = ''
+  }
+
   const options = [ 'male', 'female', 'nonbinary' ]
   const prompt = `
 Categorize the user's gender into one of the following options: ${options.join(', ')}
